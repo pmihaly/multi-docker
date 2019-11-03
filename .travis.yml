@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t pmisi/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true pmisi/react-test npm test
+
+after_success:
+  - docker build -t pmisi/multi-client ./client
+  - docker build -t pmisi/multi-nginx ./nginx
+  - docker build -t pmisi/multi-server ./server
+  - docker build -t pmisi/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push pmisi/multi-client
+  - docker push pmisi/multi-nginx
+  - docker push pmisi/multi-server
+  - docker push pmisi/multi-worker
